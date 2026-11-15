@@ -1,0 +1,15 @@
+# Red y firmware para hardware real.
+
+# Red y Wi-Fi gestionables desde el panel
+network-manager-gnome
+wpasupplicant
+
+# Firmware: libre, variado no libre, GPU y audio Intel, Wi-Fi Intel,
+# MediaTek y Realtek. Sin firmware de GPU NVIDIA (no se declara).
+firmware-linux-free
+firmware-misc-nonfree
+firmware-intel-graphics
+firmware-intel-misc
+firmware-mediatek
+firmware-iwlwifi
+firmware-realtek

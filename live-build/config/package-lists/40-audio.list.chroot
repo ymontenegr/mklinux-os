@@ -1,0 +1,7 @@
+# Audio: servidor de sonido, perfiles ALSA de portátiles modernos y
+# control de volumen en el panel.
+pulseaudio
+alsa-ucm-conf
+alsa-topology-conf
+pavucontrol
+xfce4-pulseaudio-plugin

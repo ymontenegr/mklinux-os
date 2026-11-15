@@ -1,0 +1,5 @@
+# Español: correctores ortográficos y Firefox en español latinoamericano.
+# Las traducciones de XFCE y GTK vienen dentro de sus propios paquetes.
+aspell-es
+hunspell-es
+firefox-esr-l10n-es-mx

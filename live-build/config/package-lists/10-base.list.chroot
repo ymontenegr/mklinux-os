@@ -1,0 +1,16 @@
+# Base del sistema live. La ISO se construye sin paquetes recomendados:
+# todo lo que debe ir en la imagen se declara en estas listas.
+
+# Arranque y configuración de la sesión live (usuario, idioma, teclado)
+live-boot
+live-config
+live-config-systemd
+
+# Administración: sudo y polkit (permite al usuario gestionar red y discos)
+sudo
+polkitd
+
+# Idioma y teclado de consola
+locales
+keyboard-configuration
+console-setup

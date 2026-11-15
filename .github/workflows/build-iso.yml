@@ -13,6 +13,10 @@ concurrency:
   group: build-iso-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Tamaño máximo de la ISO de desarrollo (zstd), en bytes.
+  MAX_ISO_BYTES: "1000000000"
+
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -43,6 +47,48 @@ jobs:
           cat /tmp/fs/etc/os-release
           grep -qx 'NAME="MKLinux OS"' /tmp/fs/etc/os-release
           grep -qx 'ID=mklinux' /tmp/fs/etc/os-release
+
+      - name: Verificar tamaño y contenido
+        run: |
+          iso="$(ls out/mklinux-os-*-amd64.iso)"
+          size="$(stat -c %s "${iso}")"
+          sudo mkdir -p /mnt/iso
+          sudo mount -o loop,ro "${iso}" /mnt/iso
+          live=/mnt/iso/live
+          packages="${live}/filesystem.packages"
+          count="$(wc -l < "${packages}")"
+          squashfs="$(stat -c %s "${live}/filesystem.squashfs")"
+          initrd="$(stat -c %s "${live}/initrd.img")"
+          errors=()
+          for pkg in firmware-nvidia-graphics desktop-base; do
+            if grep -qP "^${pkg}\t" "${packages}"; then
+              errors+=("la ISO no debe incluir ${pkg}")
+            fi
+          done
+          if ! grep -qP "^pulseaudio\t" "${packages}"; then
+            errors+=("falta pulseaudio en la ISO")
+          fi
+          sudo umount /mnt/iso
+          if [ "${size}" -gt "${MAX_ISO_BYTES}" ]; then
+            errors+=("la ISO pesa ${size} bytes, por encima del límite de ${MAX_ISO_BYTES}")
+          fi
+          {
+            echo "### Tamaño de la ISO"
+            echo ""
+            echo "| | Bytes | MB |"
+            echo "|---|---:|---:|"
+            echo "| ISO | ${size} | $((size / 1000000)) |"
+            echo "| Límite | ${MAX_ISO_BYTES} | $((MAX_ISO_BYTES / 1000000)) |"
+            echo "| filesystem.squashfs | ${squashfs} | $((squashfs / 1000000)) |"
+            echo "| initrd.img | ${initrd} | $((initrd / 1000000)) |"
+            echo ""
+            echo "Paquetes: ${count}"
+          } >> "${GITHUB_STEP_SUMMARY}"
+          if [ "${#errors[@]}" -gt 0 ]; then
+            for e in "${errors[@]}"; do echo "::error::${e}"; done
+            exit 1
+          fi
+          echo "OK: ${size} bytes (límite ${MAX_ISO_BYTES}), ${count} paquetes"
 
       - name: Calcular la suma SHA-256
         id: sum

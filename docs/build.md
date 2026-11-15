@@ -57,8 +57,34 @@ Cada build parte de cero dentro de un contenedor `debian:trixie` desechable y no
 
 ### Duración aproximada
 
-- GitHub Actions: 30–50 minutos.
+- GitHub Actions: 10–15 minutos.
 - MacBook Air 2012 (2 núcleos, 3,2 GB de RAM): más de 1 hora, según la conexión.
+
+## Qué incluye la ISO y cómo agregar paquetes
+
+La ISO se construye **sin paquetes recomendados** (`--apt-recommends false` en `live-build/auto/config`): solo entra lo declarado en las listas de `live-build/config/package-lists/` y sus dependencias obligatorias. Cada lista agrupa paquetes por función:
+
+| Lista | Contenido |
+|---|---|
+| `10-base.list.chroot` | sesión live, `sudo`, polkit, idioma y teclado de consola |
+| `20-escritorio.list.chroot` | XFCE, LightDM, Xorg, servicios de escritorio (discos, papelera, energía, notificaciones), fuentes, iconos y herramientas de XFCE |
+| `30-red-firmware.list.chroot` | NetworkManager, Wi-Fi y firmware (Intel, MediaTek, Realtek y varios) |
+| `40-audio.list.chroot` | PulseAudio, perfiles ALSA y control de volumen |
+| `50-idioma.list.chroot` | correctores ortográficos en español y Firefox en español |
+| `60-aplicaciones.list.chroot` | Firefox ESR |
+| `90-mklinux.list.chroot` | paquetes propios de `packages/` |
+
+Para agregar un paquete, ponlo en la lista de su función con un comentario si el motivo no es obvio. Como los recomendados no se instalan, revisa con `apt-cache depends <paquete>` qué recomienda y declara también lo que haga falta para que funcione.
+
+La ISO de desarrollo debe pesar como máximo **1 000 000 000 bytes**: el workflow `build-iso` muestra el tamaño en el resumen de cada ejecución y falla si se supera.
+
+**GPU NVIDIA:** la ISO no incluye `firmware-nvidia-graphics`, así que en equipos con GPU NVIDIA reciente el driver libre `nouveau` funciona solo con gráficos básicos. En un sistema persistente o instalado se puede agregar con:
+
+```bash
+sudo apt update && sudo apt install firmware-nvidia-graphics
+```
+
+y reiniciando.
 
 ## Probar la ISO en QEMU
 

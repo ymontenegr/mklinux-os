@@ -14,3 +14,25 @@ polkitd
 locales
 keyboard-configuration
 console-setup
+
+# Usuario live y herramientas de la sesión live (live-config los recomienda;
+# sin user-setup el usuario mk no se crea)
+user-setup
+live-tools
+
+# Seguridad y certificados: AppArmor y CA del sistema (HTTPS fuera de Firefox)
+apparmor
+ca-certificates
+
+# Páginas de manual (comando man)
+man-db
+
+# Compresión, copia y sistemas de archivos de memorias USB
+unzip
+xz-utils
+zstd
+bzip2
+rsync
+ntfs-3g
+dosfstools
+exfatprogs

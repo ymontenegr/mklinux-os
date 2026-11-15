@@ -13,3 +13,10 @@ firmware-intel-misc
 firmware-mediatek
 firmware-iwlwifi
 firmware-realtek
+
+# Base de datos regulatoria de Wi-Fi (canales permitidos por país)
+wireless-regdb
+
+# Firmware de adaptadores Wi-Fi USB Atheros
+firmware-ath9k-htc
+firmware-carl9170

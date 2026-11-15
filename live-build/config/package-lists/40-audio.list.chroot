@@ -5,3 +5,6 @@ alsa-ucm-conf
 alsa-topology-conf
 pavucontrol
 xfce4-pulseaudio-plugin
+
+# Prioridad de tiempo real para el servidor de sonido
+rtkit

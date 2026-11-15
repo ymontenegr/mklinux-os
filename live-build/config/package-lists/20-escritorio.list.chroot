@@ -37,3 +37,18 @@ xfce4-whiskermenu-plugin
 xfce4-xkb-plugin
 xfce4-clipman-plugin
 xfce4-systemload-plugin
+
+# Complementos de Thunar y del panel: gestor de archivos comprimidos (lo usa
+# thunar-archive-plugin), miniaturas e indicador de batería
+xarchiver
+tumbler
+xfce4-power-manager-plugins
+
+# TLS para aplicaciones GTK/GIO
+glib-networking
+
+# Aceleración de vídeo por hardware (Intel y AMD/Mesa)
+intel-media-va-driver
+i965-va-driver
+mesa-va-drivers
+mesa-vdpau-drivers

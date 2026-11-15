@@ -107,6 +107,8 @@ Contenido de `os-release`: `NAME="MKLinux OS"`, `PRETTY_NAME="MKLinux OS 0.1 (tr
 
 Alternativa descartada: un hook de chroot que reescriba el archivo. Es más simple, pero va contra el principio de no modificar paquetes de Debian y se rompe al actualizar `base-files`.
 
+**`/etc/os-release` en la imagen live.** live-build (`bootstrap_debootstrap`) reemplaza el enlace `/etc/os-release` por una copia del `os-release` de Debian (más `IMAGE_ID`/`BUILD_ID`) justo después de debootstrap, antes de instalar `mklinux-identity`. Un hook de chroot (`live-build/config/hooks/normal/0100-mklinux-os-release.hook.chroot`), que corre después de instalar los paquetes, restaura el enlace estándar `/etc/os-release → ../usr/lib/os-release`. Se pierden `IMAGE_ID`/`BUILD_ID`, que no se usan. El paso de CI "Verificar la identidad en la ISO" comprueba el resultado dentro del squashfs.
+
 ### 6. `test-qemu.sh`
 
 Uso: `scripts/test-qemu.sh {bios|uefi} [ISO]`. Comando base:
@@ -128,6 +130,7 @@ Se usa `-smp 2` y no 4, para dejar margen al host con 2 núcleos físicos.
 - Repositorio público: los runners estándar no consumen minutos de pago, pero los logs y artifacts son visibles. El workflow no usa secretos y declara `permissions: contents: read`.
 - Runner `ubuntu-24.04`, que trae Podman. El build usa `sudo podman` (sin contraseña en el runner) porque `build.sh` relanza con `sudo` en modo rootless.
 - Paso previo para liberar espacio (borrar `/usr/share/dotnet`, `/usr/local/lib/android`, `/opt/ghc`): el runner tiene ~14 GB libres y un build de XFCE ocupa varios GB entre chroot y binarios.
+- Tras el build: verificación de `NAME="MKLinux OS"` e `ID=mklinux` en el `/etc/os-release` del squashfs (falla el workflow si no está).
 - Tras el build: `sha256sum` de la ISO y `actions/upload-artifact` con `name: mklinux-os-<fecha>-amd64`, `retention-days: 14`, `compression-level: 0` (la ISO ya está comprimida).
 - `concurrency` agrupado por rama con `cancel-in-progress: true`, para no acumular builds largos.
 - `timeout-minutes: 90`.

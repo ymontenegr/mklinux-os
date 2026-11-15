@@ -31,6 +31,19 @@ jobs:
       - name: Construir la ISO
         run: scripts/build.sh
 
+      - name: Verificar la identidad en la ISO
+        run: |
+          sudo apt-get install -y -qq squashfs-tools > /dev/null
+          iso="$(ls out/mklinux-os-*-amd64.iso)"
+          sudo mkdir -p /mnt/iso
+          sudo mount -o loop,ro "${iso}" /mnt/iso
+          unsquashfs -n -d /tmp/fs /mnt/iso/live/filesystem.squashfs etc/os-release usr/lib/os-release > /dev/null
+          sudo umount /mnt/iso
+          ls -l /tmp/fs/etc/os-release
+          cat /tmp/fs/etc/os-release
+          grep -qx 'NAME="MKLinux OS"' /tmp/fs/etc/os-release
+          grep -qx 'ID=mklinux' /tmp/fs/etc/os-release
+
       - name: Calcular la suma SHA-256
         id: sum
         run: |

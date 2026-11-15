@@ -82,5 +82,14 @@ if [ "${mode}" = "uefi" ]; then
     )
 fi
 
+# Si se lanza desde una app snap (p. ej. la terminal de VS Code), sus variables
+# de GTK/GIO apuntan a /snap/... y hacen abortar la interfaz GTK de QEMU.
+if [ -n "${SNAP:-}" ]; then
+    unset GDK_PIXBUF_MODULEDIR GDK_PIXBUF_MODULE_FILE GIO_MODULE_DIR \
+        GSETTINGS_SCHEMA_DIR GTK_EXE_PREFIX GTK_IM_MODULE_FILE GTK_PATH LOCPATH
+    XDG_DATA_DIRS="$(printf '%s' "${XDG_DATA_DIRS:-}" | tr ':' '\n' | grep -v '/snap/' | paste -sd ':' -)"
+    export XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+fi
+
 echo "==> Arrancando ${iso} en modo ${mode} (1536 MB, KVM)"
 qemu-system-x86_64 "${args[@]}"

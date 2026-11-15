@@ -1,0 +1,8 @@
+#!/bin/sh
+# live-build (bootstrap_debootstrap) reemplaza /etc/os-release por una copia
+# del os-release de Debian hecha ANTES de instalar mklinux-identity. Se
+# restaura el enlace estándar de Debian, que apunta a /usr/lib/os-release
+# (el de MKLinux OS, instalado por mklinux-identity).
+set -e
+
+ln -sfn ../usr/lib/os-release /etc/os-release

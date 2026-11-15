@@ -16,6 +16,7 @@
 - [x] 3.1 Escribir `live-build/auto/config` con las opciones de la Decisión 3 (trixie, amd64, áreas, iso-hybrid, syslinux+grub-efi, `--apt-recommends true`, bootappend-live con `username=mk hostname=mklinux locales=es_CO.UTF-8 keyboard-layouts=latam timezone=America/Bogota`, compresión zstd/xz según `MKLINUX_RELEASE`, nombre de volumen); verificar que `lb config` corre sin errores dentro de un contenedor `debian:trixie`
 - [x] 3.2 Escribir `live-build/config/package-lists/mklinux.list.chroot` con los paquetes de la Decisión 4, incluidos `firmware-linux-free`, `firmware-misc-nonfree`, `firmware-iwlwifi`, `firmware-realtek` y `wpasupplicant`; verificar con `apt-get install --simulate` en un contenedor `debian:trixie` (con `non-free-firmware` habilitado) que todos los nombres se resuelven
 - [x] 3.3 Agregar los archivos de respaldo `includes.chroot/etc/default/keyboard` (`XKBLAYOUT="latam"`) y `includes.chroot/etc/lightdm/lightdm.conf.d/50-mklinux.conf` (`user-session=xfce`); verificar que, tras `lb config`, aparecen en `config/includes.chroot/` del directorio de trabajo
+- [ ] 3.4 Agregar el hook `config/hooks/normal/0100-mklinux-os-release.hook.chroot` que restaura `/etc/os-release → ../usr/lib/os-release` (live-build lo reemplaza por la copia de Debian antes de instalar `mklinux-identity`, ver Decisión 5); verificar con `shellcheck` y, en la ISO de CI, que `/etc/os-release` es un enlace y muestra `NAME="MKLinux OS"`
 
 ## 4. Scripts de build
 
@@ -26,9 +27,10 @@
 ## 5. GitHub Actions y primer build completo
 
 - [x] 5.1 Escribir `.github/workflows/build-iso.yml` según la Decisión 7 (push a `main` + `workflow_dispatch`, `ubuntu-24.04`, `permissions: contents: read`, limpieza de disco, `scripts/build.sh`, `sha256sum`, `upload-artifact` con retención de 14 días, `concurrency`, `timeout-minutes: 90`); verificar la sintaxis con `actionlint`
-- [ ] 5.2 Hacer push a `main` para lanzar el primer build completo en CI y verificar que el workflow termina en verde, que el artifact contiene `mklinux-os-<AAAAMMDD>-amd64.iso` y su `.sha256`, y que `sha256sum -c` es correcto tras descargarlo
-- [ ] 5.3 Sobre la ISO descargada de CI, verificar que `unsquashfs -s` de `live/filesystem.squashfs` indica compresión zstd y que el tamaño de la ISO es menor de 2,5 GB (`du -h`)
-- [ ] 5.4 (Opcional, no bloquea la aceptación) Ejecutar un build completo en local con `scripts/build.sh` y verificar que existe `out/mklinux-os-<AAAAMMDD>-amd64.iso`, que `out/` y la ISO pertenecen al usuario del host (`stat -c %U`), que se pueden borrar sin `sudo` y que `git status` no muestra archivos nuevos fuera de `out/`
+- [x] 5.2 Hacer push a `main` para lanzar el primer build completo en CI y verificar que el workflow termina en verde, que el artifact contiene `mklinux-os-<AAAAMMDD>-amd64.iso` y su `.sha256`, y que `sha256sum -c` es correcto tras descargarlo
+- [x] 5.3 Sobre la ISO descargada de CI, verificar que `unsquashfs -s` de `live/filesystem.squashfs` indica compresión zstd y que el tamaño de la ISO es menor de 2,5 GB (`du -h`)
+- [ ] 5.5 Agregar al workflow el paso "Verificar la identidad en la ISO" (extrae `etc/os-release` del squashfs y exige `NAME="MKLinux OS"` e `ID=mklinux`); verificar con `actionlint` y que el workflow termina en verde con el hook de 3.4
+- 5.4 (Omitida por decisión del mantenedor, 2026-11-15: el build se valida en CI; no se registra como tarea) Ejecutar un build completo en local con `scripts/build.sh` y verificar que existe `out/mklinux-os-<AAAAMMDD>-amd64.iso`, que `out/` y la ISO pertenecen al usuario del host (`stat -c %U`), que se pueden borrar sin `sudo` y que `git status` no muestra archivos nuevos fuera de `out/`
 
 ## 6. Prueba en QEMU
 

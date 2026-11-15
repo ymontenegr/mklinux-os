@@ -1,0 +1,13 @@
+Package: mklinux-identity
+Version: 0.1.0
+Section: admin
+Priority: optional
+Architecture: all
+Depends: base-files
+Maintainer: MKLinux OS <46330539+ymontenegr@users.noreply.github.com>
+Homepage: https://github.com/ymontenegr/mklinux-os
+Description: identidad de MKLinux OS
+ Instala /usr/lib/os-release (y por tanto /etc/os-release) con la identidad
+ de MKLinux OS. El archivo original de base-files se conserva desviado en
+ /usr/lib/os-release.debian mediante dpkg-divert, de modo que las
+ actualizaciones de base-files no sobrescriben la identidad.

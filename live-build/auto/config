@@ -1,0 +1,37 @@
+#!/bin/sh
+# Configuración de live-build para MKLinux OS.
+# live-build ejecuta este script al llamar a `lb config`; el resultado se
+# regenera en config/ en cada build (ver openspec/changes/iso-base/design.md).
+set -e
+
+# zstd para desarrollo (rápido); xz solo para releases.
+if [ "${MKLINUX_RELEASE:-0}" = "1" ]; then
+    compression=xz
+else
+    compression=zstd
+fi
+
+build_date="${BUILD_DATE:-$(date -u +%Y%m%d)}"
+
+lb config noauto \
+    --mode debian \
+    --system live \
+    --distribution trixie \
+    --architectures amd64 \
+    --linux-flavours amd64 \
+    --archive-areas "main contrib non-free non-free-firmware" \
+    --security true \
+    --updates true \
+    --apt-recommends true \
+    --firmware-chroot false \
+    --firmware-binary false \
+    --debian-installer none \
+    --binary-images iso-hybrid \
+    --bootloaders "syslinux,grub-efi" \
+    --image-name mklinux-os \
+    --iso-volume "MKLinux OS ${build_date}" \
+    --iso-application "MKLinux OS" \
+    --iso-publisher "MKLinux OS; https://github.com/ymontenegr/mklinux-os" \
+    --bootappend-live "boot=live components quiet username=mk hostname=mklinux locales=es_CO.UTF-8 keyboard-layouts=latam timezone=America/Bogota" \
+    --chroot-squashfs-compression-type "${compression}" \
+    "${@}"

@@ -57,7 +57,7 @@ Se usa `auto/config` (mecanismo estándar de live-build) para que toda la config
 
 `container-build.sh`:
 
-1. `apt-get install live-build dpkg-dev` (más lo mínimo necesario).
+1. `apt-get install live-build` (`dpkg-deb` ya viene con `dpkg`).
 2. Construye `packages/mklinux-identity` con `dpkg-deb --build` y deja el `.deb` en `config/packages.chroot/` del directorio de trabajo.
 3. Copia `live-build/` a un directorio de trabajo dentro del contenedor (`/build`), ejecuta `lb config` y `lb build`.
 4. Copia la ISO a `/out/.mklinux-os-<fecha>-amd64.iso.partial` y luego la renombra al nombre final con `mv` (operación atómica en el mismo sistema de archivos). Así se cumple el requisito de no dejar una ISO incompleta con el nombre final.
@@ -70,6 +70,7 @@ El build trabaja en el sistema de archivos del contenedor, que se destruye con `
 En `auto/config` (valores principales):
 
 - `--distribution trixie --architectures amd64 --archive-areas "main contrib non-free non-free-firmware"` (el firmware no libre mejora el arranque en hardware real y es lo que Debian incluye en sus propias imágenes live).
+- `--firmware-chroot false --firmware-binary false`: por defecto live-build instala *todos* los paquetes de `non-free-firmware`; se desactiva para que el firmware sea solo el de la lista explícita (Decisión 4).
 - `--binary-images iso-hybrid --bootloaders "syslinux,grub-efi"` → ISO híbrida que arranca en BIOS (syslinux/isolinux) y UEFI (GRUB), desde CD o USB.
 - `--iso-volume "MKLinux OS <fecha>" --iso-application "MKLinux OS" --iso-publisher "MKLinux OS"`.
 - `--bootappend-live "boot=live components username=mk hostname=mklinux locales=es_CO.UTF-8 keyboard-layouts=latam timezone=America/Bogota"`.
@@ -82,7 +83,7 @@ Como respaldo, `includes.chroot/etc/default/keyboard` fija `XKBLAYOUT="latam"` y
 
 ### 4. Lista de paquetes
 
-`mklinux.list.chroot`: `live-boot live-config live-config-systemd`, `xfce4 xfce4-terminal xfce4-goodies` (mínimo razonable), `lightdm lightdm-gtk-greeter`, `xserver-xorg-core xserver-xorg-video-all` (incluye `qxl`/`modesetting` para QEMU), `network-manager-gnome`, `wpasupplicant`, firmware para hardware real (`firmware-linux-free`, `firmware-misc-nonfree`, `firmware-iwlwifi`, `firmware-realtek`; los tres últimos vienen del área `non-free-firmware`), `sudo`, `locales`, `keyboard-configuration console-setup`, `task-spanish` (traducciones), `firefox-esr` y `mklinux-identity` (desde `packages.chroot`).
+`mklinux.list.chroot`: `live-boot live-config live-config-systemd`, `xfce4 xfce4-terminal xfce4-goodies` (mínimo razonable), `lightdm lightdm-gtk-greeter`, `xserver-xorg-core xserver-xorg-input-all xserver-xorg-video-all` (incluye `qxl`/`modesetting` para QEMU), `network-manager-gnome`, `wpasupplicant`, firmware para hardware real (`firmware-linux-free`, `firmware-misc-nonfree`, `firmware-iwlwifi`, `firmware-realtek`; los tres últimos vienen del área `non-free-firmware`), `sudo`, `locales`, `keyboard-configuration console-setup`, `task-spanish` (traducciones), `firefox-esr` y `mklinux-identity` (desde `packages.chroot`).
 
 La lista exacta se ajusta durante la implementación; el objetivo orientativo es < 2,5 GB (con recomendados incluidos).
 
@@ -90,11 +91,11 @@ La lista exacta se ajusta durante la implementación; el objetivo orientativo es
 
 En Debian, `/etc/os-release` es un enlace a `/usr/lib/os-release`, que pertenece a `base-files`. Sobrescribirlo directamente (por ejemplo con `includes.chroot`) se perdería en la siguiente actualización de `base-files`.
 
-`mklinux-identity` usa `dpkg-divert --rename --package mklinux-identity --divert /usr/lib/os-release.debian --add /usr/lib/os-release` en `preinst` y lo revierte en `postrm`. Así `dpkg` instala las futuras versiones de Debian en `os-release.debian` y la de MKLinux OS se mantiene. Ambos scripts son idempotentes: se pueden ejecutar varias veces, o tras una instalación interrumpida, sin fallar ni duplicar la desviación.
+`mklinux-identity` desvía `/usr/lib/os-release` a `/usr/lib/os-release.debian` en `preinst` y lo revierte en `postrm`. Se usa `--no-rename` y se copia/restaura el archivo a mano, en lugar de `--rename`: `base-files` es Essential y con `--rename` el archivo desaparecería entre `preinst` y el desempaquetado (dpkg lo advierte explícitamente). Así `dpkg` instala las futuras versiones de Debian en `os-release.debian` y la de MKLinux OS se mantiene. Ambos scripts son idempotentes: se pueden ejecutar varias veces, o tras una instalación interrumpida, sin fallar ni duplicar la desviación.
 
-- `preinst` (`install` y `upgrade`): añade la desviación solo si `dpkg-divert --listpackage /usr/lib/os-release` no devuelve ya `mklinux-identity`. Con cualquier otro argumento no hace nada.
+- `preinst` (`install` y `upgrade`): copia el original a `os-release.debian` y añade la desviación (`--no-rename`) solo si `dpkg-divert --listpackage /usr/lib/os-release` no devuelve ya `mklinux-identity`. Con cualquier otro argumento no hace nada.
 - `postrm`:
-  - `remove`, `purge` y `abort-install`: quita la desviación con `--rename` solo si existe y pertenece a `mklinux-identity`, y así restaura el archivo de Debian. `abort-install` cubre el caso en que `preinst` ya añadió la desviación pero la instalación falló después; sin él, el sistema quedaría sin `/usr/lib/os-release`.
+  - `remove`, `purge` y `abort-install`: quita la desviación (`--no-rename`) solo si existe y pertenece a `mklinux-identity`, y luego mueve `os-release.debian` de vuelta a `os-release` si quedó sin desviación; así se restaura el archivo de Debian. `abort-install` cubre el caso en que `preinst` ya añadió la desviación pero la instalación falló después; sin él, el sistema quedaría sin `/usr/lib/os-release`.
   - `upgrade`, `abort-upgrade`, `failed-upgrade` y demás argumentos: no hace nada, porque hay una versión del paquete instalada que sigue necesitando la desviación.
 - Ambos scripts usan `set -e` y terminan con código 0 en los casos sin acción.
 

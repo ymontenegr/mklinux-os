@@ -1,0 +1,23 @@
+#!/bin/sh
+# Desvía el os-release de base-files para instalar el de MKLinux OS.
+# Se copia el original en vez de usar --rename para que /usr/lib/os-release
+# nunca falte (base-files es Essential). Idempotente: no hace nada si la
+# desviación ya existe.
+set -e
+
+orig=/usr/lib/os-release
+divert=/usr/lib/os-release.debian
+
+case "$1" in
+    install|upgrade)
+        if [ "$(dpkg-divert --listpackage "$orig")" != "mklinux-identity" ]; then
+            if [ -e "$orig" ]; then
+                cp -a "$orig" "$divert"
+            fi
+            dpkg-divert --package mklinux-identity --no-rename \
+                --divert "$divert" --add "$orig"
+        fi
+        ;;
+esac
+
+exit 0

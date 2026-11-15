@@ -1,0 +1,53 @@
+# Construye la ISO de MKLinux OS en cada push a main y la publica como artifact.
+name: build-iso
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-iso-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Obtener el código
+        uses: actions/checkout@v4
+
+      - name: Liberar espacio en disco
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force > /dev/null
+          df -h /
+
+      - name: Construir la ISO
+        run: scripts/build.sh
+
+      - name: Calcular la suma SHA-256
+        id: sum
+        run: |
+          cd out
+          iso="$(ls mklinux-os-*-amd64.iso)"
+          sha256sum "${iso}" > "${iso}.sha256"
+          cat "${iso}.sha256"
+          du -h "${iso}"
+          echo "name=${iso%.iso}" >> "${GITHUB_OUTPUT}"
+
+      - name: Publicar la ISO como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.sum.outputs.name }}
+          path: |
+            out/*.iso
+            out/*.iso.sha256
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0

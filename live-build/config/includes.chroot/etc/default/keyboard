@@ -1,0 +1,7 @@
+# Respaldo: live-config también fija el teclado con keyboard-layouts=latam.
+XKBMODEL="pc105"
+XKBLAYOUT="latam"
+XKBVARIANT=""
+XKBOPTIONS=""
+
+BACKSPACE="guess"

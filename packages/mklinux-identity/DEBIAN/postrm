@@ -1,0 +1,23 @@
+#!/bin/sh
+# Restaura el os-release de base-files al quitar el paquete o si la
+# instalación se aborta después de que preinst añadió la desviación.
+# Idempotente: cada paso comprueba si ya se hizo.
+set -e
+
+orig=/usr/lib/os-release
+divert=/usr/lib/os-release.debian
+
+case "$1" in
+    remove|purge|abort-install)
+        if [ "$(dpkg-divert --listpackage "$orig")" = "mklinux-identity" ]; then
+            dpkg-divert --package mklinux-identity --no-rename --remove "$orig"
+        fi
+        if [ -e "$divert" ] && [ -z "$(dpkg-divert --listpackage "$orig")" ]; then
+            mv -f "$divert" "$orig"
+        fi
+        ;;
+    # upgrade, abort-upgrade, failed-upgrade, disappear: sigue habiendo una
+    # versión instalada que necesita la desviación.
+esac
+
+exit 0

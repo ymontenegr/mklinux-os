@@ -32,7 +32,7 @@
 
 ## 6. Prueba en QEMU
 
-- [ ] 6.1 Escribir `scripts/test-qemu.sh {bios|uefi} [ISO]` según la Decisión 6 (ISO más reciente de `out/` por defecto, comprobación de QEMU, `/dev/kvm`, OVMF e ISO con mensajes en español, copia temporal de `OVMF_VARS`, 1536 MB, `-smp 2`); verificar con `shellcheck` y comprobar que un modo inválido y un `out/` vacío terminan con código distinto de 0 y el mensaje esperado
+- [x] 6.1 Escribir `scripts/test-qemu.sh {bios|uefi} [ISO]` según la Decisión 6 (ISO más reciente de `out/` por defecto, comprobación de QEMU, `/dev/kvm`, OVMF e ISO con mensajes en español, copia temporal de `OVMF_VARS`, 1536 MB, `-smp 2`); verificar con `shellcheck` y comprobar que un modo inválido y un `out/` vacío terminan con código distinto de 0 y el mensaje esperado
 - [ ] 6.2 Documentar en `docs/build.md` la sección de pruebas en QEMU (paquetes del host: `qemu-system-x86`, `ovmf`; permisos de `/dev/kvm`; cómo colocar en `out/` la ISO descargada de CI; uso del script) y la lista de comprobación de aceptación; verificar que los comandos documentados funcionan tal como están escritos
 
 ## 7. Aceptación en QEMU

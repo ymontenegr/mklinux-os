@@ -34,13 +34,14 @@ mkdir -p "${work}/config/packages.chroot"
 
 echo "==> Construyendo paquetes propios"
 for pkg in "${src}"/packages/mklinux-*/; do
-    name="$(basename "${pkg}")"
     tmp="$(mktemp -d)"
     cp -a "${pkg}." "${tmp}/"
     # Permisos normalizados: el umask del host no debe llegar a la imagen.
     chmod -R u=rwX,go=rX "${tmp}"
     find "${tmp}/DEBIAN" -type f \( -name preinst -o -name postinst -o -name prerm -o -name postrm \) -exec chmod 0755 {} +
-    dpkg-deb --root-owner-group --build "${tmp}" "${work}/config/packages.chroot/${name}.deb"
+    # Destino = directorio: dpkg-deb usa el nombre <paquete>_<versión>_<arq>.deb,
+    # el único patrón que live-build reconoce en packages.chroot.
+    dpkg-deb --root-owner-group --build "${tmp}" "${work}/config/packages.chroot/"
     rm -rf "${tmp}"
 done
 

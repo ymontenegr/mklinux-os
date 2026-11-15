@@ -28,6 +28,7 @@
 
 - [ ] 5.1 Descargar la ISO de CI (según `docs/build.md`) y, en `scripts/test-qemu.sh bios`, verificar los escenarios previos de `live-session` y `os-identity` (llegada al escritorio, `mk`, `sudo`, `hostname`, `locale`, `latam`, `-05`, `os-release`)
 - [ ] 5.2 En la misma sesión BIOS, verificar los escenarios nuevos de `live-session`: `pactl info`, indicadores de volumen y red en el panel, `nmcli -t -f STATE general` → `connected`, `nmcli general permissions` (network-control y enable-disable-wifi en `yes`), `gio trash` + `gio list trash://`, `udisksctl status`, `xdg-open https://www.debian.org` abre Firefox, menú en español y `aspell -l es list` → `kasa`
+  - Primera prueba (ISO del run 43747281911, 876 609 536 bytes, 668 paquetes): pasan identidad, `mk`, `sudo`, hostname, idioma, teclado, zona, `pactl info` (servidor `pulseaudio`; sumidero `auto_null` porque la VM no tiene tarjeta de sonido), red y permisos, `udisksctl`, Firefox con `xdg-open`, menú en español y `aspell`. Fallan: `gio` no existe (llegaba como recomendado en `libglib2.0-bin`) y el panel no muestra el indicador de volumen (el panel por defecto de `xfce4-panel` no incluye el plugin). Arreglos: declarar `libglib2.0-bin` y configuración del panel propia con el plugin `pulseaudio` (probado en vivo con `xfconf-query`). Pendiente repetir la prueba con la ISO nueva.
 - [ ] 5.3 Repetir 5.1 y 5.2 con `scripts/test-qemu.sh uefi`
 
 ## Workflow follow-up

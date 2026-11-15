@@ -44,8 +44,9 @@ xarchiver
 tumbler
 xfce4-power-manager-plugins
 
-# TLS para aplicaciones GTK/GIO
+# TLS para aplicaciones GTK/GIO y la orden gio (papelera, montajes desde la terminal)
 glib-networking
+libglib2.0-bin
 
 # Aceleración de vídeo por hardware (Intel y AMD/Mesa)
 intel-media-va-driver

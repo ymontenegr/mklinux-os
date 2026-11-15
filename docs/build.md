@@ -74,6 +74,8 @@ La ISO se construye **sin paquetes recomendados** (`--apt-recommends false` en `
 | `60-aplicaciones.list.chroot` | Firefox ESR |
 | `90-mklinux.list.chroot` | paquetes propios de `packages/` |
 
+Además de las listas, `live-build/config/includes.chroot/` copia archivos de configuración a la imagen; entre ellos, el panel de XFCE (`etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml`), que es el de Debian con el indicador de volumen agregado.
+
 Para agregar un paquete, ponlo en la lista de su función con un comentario si el motivo no es obvio. Como los recomendados no se instalan, revisa con `apt-cache depends <paquete>` qué recomienda y declara también lo que haga falta para que funcione.
 
 La ISO de desarrollo debe pesar como máximo **1 000 000 000 bytes**: el workflow `build-iso` muestra el tamaño en el resumen de cada ejecución y falla si se supera.

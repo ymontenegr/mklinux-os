@@ -25,10 +25,12 @@ Cada push a `main` construye la ISO en GitHub Actions (workflow `build-iso`). Es
        -H "Authorization: Bearer $(gh auth token)" \
        "https://api.github.com/repos/$repo/actions/artifacts/$id/zip")
    mkdir -p out
-   curl -# --fail -C - -o out/artifact.zip "$url"
-   unzip -o out/artifact.zip -d out/ && rm out/artifact.zip
-   (cd out && sha256sum -c mklinux-os-*-amd64.iso.sha256)
+   curl -# --fail -C - -o out/artifact.zip "$url" \
+       && unzip -o out/artifact.zip -d out/ && rm out/artifact.zip \
+       && (cd out && sha256sum -c mklinux-os-*-amd64.iso.sha256)
    ```
+
+   Si la descarga se corta, `out/artifact.zip` queda a medias: repite todos los pasos y `curl -C -` continúa desde donde quedó (la URL de descarga caduca, por eso hay que volver a pedirla).
 
    No se recomienda `gh run download`: con una ISO de más de 1 GB puede quedarse detenido sin mostrar progreso.
 

@@ -1,0 +1,28 @@
+schema: spec-driven
+context: |
+  Proyecto: MKLinux OS — "Estación de trabajo lista para desarrolladores con IA".
+  Distribución basada en Debian 13 "trixie" (stable), arquitectura amd64.
+
+  Build:
+  - Herramienta: live-build, ejecutado DENTRO de un contenedor Podman debian:trixie
+    (--privileged), para que el build sea reproducible y no dependa del host.
+  - El mismo script de build debe correr en local y en GitHub Actions.
+  - En desarrollo usar compresión squashfs rápida (zstd o lz4); xz solo para releases.
+
+  Máquina de desarrollo (limitada, tenerlo en cuenta):
+  - Ubuntu 26.04 en MacBook Air 2012: Intel i5-3427U (2 núcleos / 4 hilos), ~3,2 GB de RAM.
+  - Las pruebas en QEMU usan KVM y como máximo 1536 MB de RAM para la VM.
+  - Los builds pesados se hacen en GitHub Actions; en local solo se prueba la ISO.
+
+  Sistema objetivo (v0.x):
+  - Escritorio XFCE + LightDM. Instalador Calamares (fase posterior).
+  - Idioma es_CO.UTF-8, teclado latam, zona horaria America/Bogota.
+  - Identidad: NAME="MKLinux OS", ID=mklinux, ID_LIKE=debian.
+  - Diferencial (fases posteriores): herramientas de desarrollo con IA preinstaladas
+    (editor, Git, Podman/Docker, Python + uv, Node LTS, Ollama, CLIs de agentes de IA).
+
+  Principios (no negociables):
+  - Todo se construye por script; ningún paso manual.
+  - No se modifican paquetes de Debian; lo propio se agrega encima como paquetes .deb "mklinux-*".
+  - Cada cambio incluye cómo probarlo en QEMU y su criterio de aceptación.
+  - Specs, documentación y comentarios en español.

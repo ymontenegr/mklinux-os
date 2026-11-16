@@ -128,6 +128,7 @@ Opciones nuevas, combinables después del modo: `--disco`, `--sin-iso` (solo con
 - [Que no haya `requiredStorage` deja de ocultar "Junto a" y "Reemplazar" en una versión futura de Calamares] → La tarea 4.3 lo comprueba en cada aceptación; el escenario de `installer` lo detecta.
 - [`bootloader-config` no encuentra `grub-*` en el medio] → Se verifica `dists/trixie/main/binary-amd64/Packages` en la ISO (tarea 3.1) y se instala sin red (tarea 4.2).
 - [El `autoremove` quita algo que el sistema instalado necesita] → El escenario de inicio de sesión y una revisión de `dpkg -l` en el sistema instalado (tarea 4.2) lo detectan.
+- [Con cifrado, `/boot` queda dentro de LUKS y es GRUB quien pide la frase al encender, siempre con teclado US: una frase con ñ, tildes o símbolos escrita en latam durante la instalación puede no poder escribirse al arrancar] → Se documenta en `docs/build.md` (usar letras sin tilde, números y espacios). Una alternativa sería una partición `/boot` sin cifrar (`partitionLayout`), que deja el kernel visible; se puede evaluar en un cambio posterior. Se detectó en la tarea 4.4.
 - [Discos virtuales en un host con 24 GB libres] → qcow2 crece solo con lo escrito (~3–4 GB por instalación). Se reutiliza un disco por modo y se borra al terminar la aceptación.
 
 ## Migration Plan

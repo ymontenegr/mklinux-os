@@ -187,6 +187,7 @@ Repetir en modo `bios` y en modo `uefi`:
 En la sesión live, el ícono **Instalar MKLinux OS** del escritorio (o Menú → Sistema) abre el instalador Calamares. Funciona sin conexión a internet: el cargador de arranque y las herramientas de cifrado se instalan desde un repositorio que va dentro de la ISO.
 
 - **Particionado:** "Borrar disco" (borra **todo** el disco elegido; opcionalmente cifra el sistema con LUKS) o "Particionado manual". No se ofrece instalar junto a otro sistema.
+- **Cifrado:** con "Cifrar el sistema", la frase de cifrado se pide al encender, **antes** del menú de arranque. La pide GRUB, que usa siempre el teclado **estadounidense (US)**: las letras sin tilde y los números están en el mismo lugar que en latam, pero los símbolos no (por ejemplo, `-` está en la tecla `'` y `@` es Shift+2), y ñ y las tildes no se pueden escribir. Usa una frase solo con letras sin tilde, números y espacios, o ten en cuenta la distribución US.
 - **Disco mínimo:** 20 GB. El instalador no avisa si el disco es más pequeño: la instalación fallaría a mitad, con el disco ya borrado.
 - **Valores por defecto:** idioma `es_CO.UTF-8`, teclado `latam`, zona `America/Bogota` y equipo `mklinux`. Todos se pueden cambiar.
 - **Sistema instalado:** el usuario y la contraseña elegidos (con `sudo`), XFCE con LightDM y la identidad de MKLinux OS. No conserva el usuario live `mk`, los paquetes de la sesión live ni el instalador. Las actualizaciones vienen de los repositorios oficiales de Debian (`/etc/apt/sources.list.d/debian.sources`).

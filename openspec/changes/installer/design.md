@@ -92,7 +92,7 @@ Alternativa descartada: parchear Calamares (va contra la regla de no modificar p
   - `hostname.location: EtcFile` y `hostname.template: "mklinux"`;
   - `doAutologin: false`.
 
-  Las exigencias de contraseña son las de Debian (no vacía).
+  La contraseña solo tiene que no estar vacía (`nonempty: true`), sin `libpwquality`. Calamares exige con `libpwquality` una puntuación mínima de 40, fija en su código, y sin el diccionario de cracklib en la ISO rechaza cualquier contraseña. Se detectó en la tarea 4.2.
 - `displaymanager.conf`: solo `lightdm`, con `basicSetup: false`. La configuración de LightDM que trae la imagen (`50-mklinux.conf`, `user-session=xfce`) ya vale para el sistema instalado.
 - `finished.conf`: igual que en Debian (reiniciar al terminar, marcado por defecto).
 

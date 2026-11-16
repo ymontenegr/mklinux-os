@@ -8,13 +8,16 @@
 
 ## 2. Build y comprobación de la ISO
 
-- [ ] 2.1 Hacer push a `main` y verificar que `build-iso` termina en verde con tamaño ≤ 1 000 000 000 bytes. Con la ISO descargada (según `docs/build.md`), verificar: `firmware-brcm80211` en `live/filesystem.packages`; `usr/lib/firmware/brcm/bcm43xx-0.fw` y `bcm43xx_hdr-0.fw` en el squashfs (`unsquashfs -l`); `etc/modprobe.d/mklinux-broadcom.conf` en el squashfs. Con `lsinitramfs` sobre `live/initrd.img`, verificar que, si el initrd contiene `b43.ko`, también contiene el bloqueo (Decisión 3). Anotar aquí el tamaño de la ISO, el número de paquetes y el resultado de `lsinitramfs`
-- [ ] 2.2 En `scripts/test-qemu.sh bios`, prueba rápida de no regresión: llegar al escritorio, `nmcli -t -f STATE general` → `connected`, `modprobe --showconfig | grep -w b43` → `blacklist b43` y el indicador de volumen en el panel
+- [x] 2.1 Hacer push a `main` y verificar que `build-iso` termina en verde con tamaño ≤ 1 000 000 000 bytes. Con la ISO descargada (según `docs/build.md`), verificar: `firmware-brcm80211` en `live/filesystem.packages`; `usr/lib/firmware/brcm/bcm43xx-0.fw` y `bcm43xx_hdr-0.fw` en el squashfs (`unsquashfs -l`); `etc/modprobe.d/mklinux-broadcom.conf` en el squashfs. Con `lsinitramfs` sobre `live/initrd.img`, verificar que, si el initrd contiene `b43.ko`, también contiene el bloqueo (Decisión 3). Anotar aquí el tamaño de la ISO, el número de paquetes y el resultado de `lsinitramfs`
+  - Resultado (run 43785482423): ISO 890 241 024 bytes (antes 878 706 688; +11,5 MB), 671 paquetes, `filesystem.squashfs` 816 955 392, `initrd.img` 46 494 486. `firmware-brcm80211` `20250410-2` en `filesystem.packages`; `bcm43xx-0.fw`, `bcm43xx_hdr-0.fw` y `etc/modprobe.d/mklinux-broadcom.conf` en el squashfs. `lsinitramfs`: el initrd no contiene `b43.ko`, `brcmsmac.ko` ni `bcma.ko` (la Wi-Fi se carga desde el sistema raíz) y sí contiene `etc/modprobe.d/mklinux-broadcom.conf`.
+- [x] 2.2 En `scripts/test-qemu.sh bios`, prueba rápida de no regresión: llegar al escritorio, `nmcli -t -f STATE general` → `connected`, `modprobe --showconfig | grep -w b43` → `blacklist b43` y el indicador de volumen en el panel
 
 ## 3. Aceptación en la MacBook Air 2012
 
-- [ ] 3.1 El mantenedor graba la ISO de 2.1 en una memoria USB siguiendo `docs/build.md` y arranca la MacBook Air 2012 con Option → "EFI Boot"; verificar que llega al escritorio XFCE del usuario `mk`
-- [ ] 3.2 En esa sesión, verificar los escenarios de `live-session` "Wi-Fi Broadcom con brcmsmac": `lspci -nnk -d 14e4:4353` muestra `bcma-pci-bridge`, `lsmod` muestra `brcmsmac` y no `b43`, `nmcli device wifi list` muestra redes y la conexión a una red desde el panel deja `wifi:connected`. Anotar aquí el resultado
+- [x] 3.1 El mantenedor graba la ISO de 2.1 en una memoria USB siguiendo `docs/build.md` y arranca la MacBook Air 2012 con Option → "EFI Boot"; verificar que llega al escritorio XFCE del usuario `mk`
+  - Resultado: la ISO arranca desde una memoria USB (Kingston DataTraveler 3.0) en la MacBook Air 2012 y llega al escritorio. Gráficos, rendimiento, vídeo de YouTube en Firefox y sonido funcionan bien en el hardware real.
+- [x] 3.2 En esa sesión, verificar los escenarios de `live-session` "Wi-Fi Broadcom con brcmsmac": `lspci -nnk -d 14e4:4353` muestra `bcma-pci-bridge`, `lsmod` muestra `brcmsmac` y no `b43`, `nmcli device wifi list` muestra redes y la conexión a una red desde el panel deja `wifi:connected`. Anotar aquí el resultado
+  - Resultado: el mantenedor eligió la red Wi-Fi de su casa en el indicador de red del panel, se conectó con su contraseña y navegó (YouTube con vídeo y sonido) sin cable ni anclaje USB. No se ejecutaron `lspci`, `lsmod` ni `nmcli`, así que no hay salida registrada de esos comandos. El driver se deduce por descarte: la ISO no trae `wl` (`broadcom-sta-dkms`) y `b43` está bloqueado y sin firmware, así que solo `brcmsmac` puede manejar la BCM43224. El mantenedor aceptó esta evidencia para cerrar la tarea.
 
 ## Workflow follow-up
 

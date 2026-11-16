@@ -23,9 +23,11 @@ at-spi2-core
 xdg-utils
 xdg-user-dirs
 
-# Fuentes base de X e iconos
+# Fuentes base de X e iconos (librsvg2-common: GTK dibuja los iconos SVG,
+# como los de Adwaita que usa el saludo de LightDM)
 xfonts-base
 tango-icon-theme
+librsvg2-common
 
 # Selección de xfce4-goodies: herramientas de uso diario
 mousepad

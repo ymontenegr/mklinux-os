@@ -87,7 +87,7 @@ Alternativa descartada: parchear Calamares (va contra la regla de no modificar p
 ### 5. Idioma, teclado, usuarios y equipo
 
 - `locale.conf`: `region: America`, `zone: Bogota`, sin GeoIP (la instalación no requiere red). El idioma propuesto es el de la sesión live (`es_CO.UTF-8`).
-- `keyboard.conf`: sin valores fijos. Calamares toma la distribución activa (`latam`) y la escribe en `/etc/default/keyboard` del destino.
+- `keyboard.conf`: `guessLayout: false`. Sin esa opción, Calamares adivina la distribución a partir del idioma (`es_CO` → `es`) al entrar en la página de teclado; con ella conserva la activa (`latam`) y la escribe en `/etc/default/keyboard` del destino. Se detectó en la tarea 4.2.
 - `users.conf`:
   - grupos por defecto de Debian;
   - `sudoersGroup: sudo` y `setRootPassword: false`;

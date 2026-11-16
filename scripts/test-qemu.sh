@@ -1,16 +1,24 @@
 #!/bin/bash
-# Arranca una ISO de MKLinux OS en QEMU con KVM (sesión live, sin disco).
+# Arranca una ISO de MKLinux OS en QEMU con KVM: sesión live o, con un disco
+# virtual, instalación y arranque del sistema instalado.
 #
-# Uso: scripts/test-qemu.sh {bios|uefi} [ISO]
+# Uso: scripts/test-qemu.sh {bios|uefi} [--disco [--sin-iso]] [--sin-red] [ISO]
 #   Sin ISO, usa la más reciente de out/.
+#   --disco    conecta out/mklinux-disco-<modo>.qcow2 (20 GB, se crea vacío si
+#              no existe); en uefi, sus variables UEFI se guardan junto a él.
+#   --sin-iso  arranca solo desde el disco (requiere --disco).
+#   --sin-red  sin tarjeta de red.
 #   OVMF_CODE y OVMF_VARS permiten indicar otro firmware UEFI.
 set -euo pipefail
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 usage() {
-    echo "Uso: $0 {bios|uefi} [ISO]"
+    echo "Uso: $0 {bios|uefi} [--disco [--sin-iso]] [--sin-red] [ISO]"
     echo "  Sin ISO, usa la más reciente de out/."
+    echo "  --disco    conecta el disco virtual out/mklinux-disco-<modo>.qcow2 (20 GB)."
+    echo "  --sin-iso  arranca solo desde el disco (requiere --disco)."
+    echo "  --sin-red  arranca la VM sin tarjeta de red."
 }
 
 fail() {
@@ -25,11 +33,39 @@ case "${mode}" in
     *) echo "Error: modo inválido '${mode}' (debe ser bios o uefi)." >&2; usage >&2; exit 2 ;;
 esac
 
-if [ -n "${2:-}" ]; then
-    iso="$2"
+shift
+disco=false
+sin_iso=false
+sin_red=false
+iso=""
+for arg in "$@"; do
+    case "${arg}" in
+        --disco) disco=true ;;
+        --sin-iso) sin_iso=true ;;
+        --sin-red) sin_red=true ;;
+        -*) echo "Error: opción desconocida '${arg}'." >&2; usage >&2; exit 2 ;;
+        *)
+            [ -z "${iso}" ] || { echo "Error: indica una sola ISO." >&2; usage >&2; exit 2; }
+            iso="${arg}"
+            ;;
+    esac
+done
+if "${sin_iso}" && ! "${disco}"; then
+    echo "Error: --sin-iso solo tiene sentido con --disco (no habría nada que arrancar)." >&2
+    usage >&2
+    exit 2
+fi
+if "${sin_iso}" && [ -n "${iso}" ]; then
+    echo "Error: --sin-iso no admite una ISO." >&2
+    usage >&2
+    exit 2
+fi
+
+if "${sin_iso}"; then
+    :
+elif [ -n "${iso}" ]; then
     [ -f "${iso}" ] || fail "no existe la ISO '${iso}'."
 else
-    iso=""
     for f in "${repo}"/out/*.iso; do
         if [ -f "${f}" ] && { [ -z "${iso}" ] || [ "${f}" -nt "${iso}" ]; }; then
             iso="${f}"
@@ -50,11 +86,36 @@ fi
 
 args=(
     -enable-kvm -cpu host -smp 2 -m 1536
-    -cdrom "${iso}" -boot d
     -vga virtio -display gtk
-    -device "virtio-net-pci,netdev=n0" -netdev "user,id=n0"
     -name "MKLinux OS (${mode})"
 )
+
+if "${sin_red}"; then
+    args+=(-nic none)
+else
+    args+=(-device "virtio-net-pci,netdev=n0" -netdev "user,id=n0")
+fi
+
+disco_img="${repo}/out/mklinux-disco-${mode}.qcow2"
+if "${disco}"; then
+    command -v qemu-img >/dev/null 2>&1 \
+        || fail "no se encontró qemu-img. Instálalo con 'sudo apt install qemu-utils'."
+    if [ ! -f "${disco_img}" ]; then
+        mkdir -p "${repo}/out"
+        echo "==> Creando el disco virtual ${disco_img} (20 GB, crece según se usa)"
+        qemu-img create -q -f qcow2 "${disco_img}" 20G
+    fi
+    args+=(-drive "file=${disco_img},if=virtio,format=qcow2")
+fi
+
+if "${sin_iso}"; then
+    args+=(-boot order=c)
+elif "${disco}"; then
+    # La ISO primero; si no arranca, el disco.
+    args+=(-cdrom "${iso}" -boot order=dc)
+else
+    args+=(-cdrom "${iso}" -boot d)
+fi
 
 if [ "${mode}" = "uefi" ]; then
     code="${OVMF_CODE:-}"
@@ -72,13 +133,21 @@ if [ "${mode}" = "uefi" ]; then
     [ -n "${code}" ] && [ -f "${code}" ] && [ -n "${vars}" ] && [ -f "${vars}" ] \
         || fail "no se encontró el firmware OVMF. Instálalo con 'sudo apt install ovmf' o indica OVMF_CODE y OVMF_VARS."
 
-    # Copia propia de las variables UEFI: no se modifican los archivos del sistema.
-    tmp="$(mktemp -d)"
-    trap 'rm -rf "${tmp}"' EXIT
-    cp "${vars}" "${tmp}/OVMF_VARS.fd"
+    # Copia propia de las variables UEFI: no se modifican los archivos del
+    # sistema. Con --disco se conserva junto al disco, para que la entrada de
+    # arranque del sistema instalado sobreviva entre ejecuciones.
+    if "${disco}"; then
+        vars_copia="${repo}/out/mklinux-disco-uefi.vars.fd"
+        [ -f "${vars_copia}" ] || cp "${vars}" "${vars_copia}"
+    else
+        tmp="$(mktemp -d)"
+        trap 'rm -rf "${tmp}"' EXIT
+        vars_copia="${tmp}/OVMF_VARS.fd"
+        cp "${vars}" "${vars_copia}"
+    fi
     args+=(
         -drive "if=pflash,format=raw,readonly=on,file=${code}"
-        -drive "if=pflash,format=raw,file=${tmp}/OVMF_VARS.fd"
+        -drive "if=pflash,format=raw,file=${vars_copia}"
     )
 fi
 
@@ -91,5 +160,11 @@ if [ -n "${SNAP:-}" ]; then
     export XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 fi
 
-echo "==> Arrancando ${iso} en modo ${mode} (1536 MB, KVM)"
+if "${sin_iso}"; then
+    echo "==> Arrancando el disco ${disco_img} en modo ${mode} (1536 MB, KVM)"
+elif "${disco}"; then
+    echo "==> Arrancando ${iso} en modo ${mode} con el disco ${disco_img} (1536 MB, KVM)"
+else
+    echo "==> Arrancando ${iso} en modo ${mode} (1536 MB, KVM)"
+fi
 qemu-system-x86_64 "${args[@]}"

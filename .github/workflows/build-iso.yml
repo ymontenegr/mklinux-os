@@ -15,7 +15,7 @@ concurrency:
 
 env:
   # Tamaño máximo de la ISO de desarrollo (zstd), en bytes.
-  MAX_ISO_BYTES: "1000000000"
+  MAX_ISO_BYTES: "1200000000"
 
 jobs:
   build:

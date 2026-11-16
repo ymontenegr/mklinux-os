@@ -1,0 +1,23 @@
+#!/bin/sh
+# Coloca el lanzador "Instalar MKLinux OS" en el escritorio de la sesión live
+# y lo marca como confiable en XFCE, para que se abra sin el aviso de
+# "lanzador no confiable". Se ejecuta al iniciar sesión (autostart).
+# Basado en add-calamares-desktop-icon de calamares-settings-debian (ISC),
+# usando la carpeta de escritorio del idioma activo (p. ej. ~/Escritorio).
+
+lanzador=/usr/share/applications/mklinux-instalar.desktop
+xdg-user-dirs-update 2>/dev/null
+escritorio="$(xdg-user-dir DESKTOP)"
+[ -n "$escritorio" ] && [ "$escritorio" != "$HOME" ] || escritorio="$HOME/Escritorio"
+mkdir -p "$escritorio"
+
+destino="$escritorio/mklinux-instalar.desktop"
+cp "$lanzador" "$destino"
+chmod +x "$destino"
+
+if [ "$XDG_CURRENT_DESKTOP" = "XFCE" ]; then
+    gio set --type=string "$destino" metadata::trusted true
+    gio set --type=string "$destino" metadata::xfce-exe-checksum \
+        "$(sha256sum "$destino" | cut -f1 -d' ')"
+    touch "$destino"
+fi

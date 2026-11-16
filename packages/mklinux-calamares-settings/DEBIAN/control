@@ -1,0 +1,19 @@
+Package: mklinux-calamares-settings
+Version: 0.1.0
+Section: admin
+Priority: optional
+Architecture: all
+Depends: calamares, rsync, cryptsetup, keyutils, pkexec, libglib2.0-bin, xdg-user-dirs
+Conflicts: calamares-settings-debian
+Replaces: calamares-settings-debian
+Maintainer: MKLinux OS <46330539+ymontenegr@users.noreply.github.com>
+Homepage: https://github.com/ymontenegr/mklinux-os
+Description: configuración del instalador Calamares para MKLinux OS
+ Configuración, marca y scripts de ayuda de Calamares para instalar
+ MKLinux OS desde la sesión live: español con es_CO, teclado latam y zona
+ America/Bogota por defecto, particionado "Borrar disco" y "Manual", cifrado
+ LUKS opcional e instalación sin red en BIOS y UEFI. Incluye el lanzador
+ "Instalar MKLinux OS" y lo coloca en el escritorio de la sesión live.
+ .
+ Basado en calamares-settings-debian (ISC). El instalador quita este
+ paquete del sistema instalado.

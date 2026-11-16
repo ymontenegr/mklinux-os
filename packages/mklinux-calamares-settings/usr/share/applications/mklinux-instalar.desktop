@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Instalar MKLinux OS
+Name[en]=Install MKLinux OS
+GenericName=Instalador del sistema
+Comment=Instala MKLinux OS en el disco de este equipo
+Comment[en]=Install MKLinux OS on this computer's disk
+Exec=mklinux-instalar
+Icon=mklinux-instalar
+Terminal=false
+Categories=System;
+Keywords=instalar;instalador;calamares;sistema;install;installer;
+StartupWMClass=calamares
+StartupNotify=true

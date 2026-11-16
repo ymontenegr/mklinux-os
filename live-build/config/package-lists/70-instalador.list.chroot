@@ -1,0 +1,4 @@
+# Instalador gráfico del sistema (sesión live). Su configuración está en el
+# paquete propio mklinux-calamares-settings (90-mklinux). El instalador quita
+# ambos del sistema instalado.
+calamares

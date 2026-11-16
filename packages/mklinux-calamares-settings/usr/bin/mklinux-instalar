@@ -1,0 +1,14 @@
+#!/bin/sh
+# Abre el instalador Calamares desde la sesión live de MKLinux OS.
+# Basado en calamares-install-debian de calamares-settings-debian (ISC).
+
+# live-build deja un /etc/fstab que confunde al particionado de Calamares:
+# se aparta mientras dura la instalación.
+sudo -n mv /etc/fstab /etc/fstab.orig.calamares 2>/dev/null
+
+# La política de Calamares permite la interfaz gráfica con pkexec
+# (allow_gui); la regla de polkit del paquete evita pedir contraseña.
+pkexec calamares
+
+sudo -n mv /etc/fstab.orig.calamares /etc/fstab 2>/dev/null
+exit 0

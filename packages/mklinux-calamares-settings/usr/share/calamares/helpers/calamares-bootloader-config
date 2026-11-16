@@ -1,0 +1,29 @@
+#!/bin/bash
+# Instala en el sistema destino el paquete de GRUB que corresponde al firmware
+# (grub-pc en BIOS, grub-efi en UEFI) y, si la raíz está cifrada, las
+# herramientas de LUKS para el initramfs. Los paquetes salen del repositorio
+# de la ISO (ver calamares-sources-media).
+# Basado en calamares-settings-debian 13.0.13 (ISC).
+
+CHROOT=$(mount | grep proc | grep calamares | awk '{print $3}' | sed -e "s#/proc##g")
+
+# Con cifrado de disco completo: permisos seguros para el initramfs (se
+# regenera más adelante en la instalación) y herramientas de LUKS.
+if [ "$(mount | grep "$CHROOT"" " | cut -c -16)" = "/dev/mapper/luks" ]; then
+    echo "UMASK=0077" > "$CHROOT/etc/initramfs-tools/conf.d/initramfs-permissions"
+    chroot "$CHROOT" apt-get -y install cryptsetup-initramfs cryptsetup keyutils
+fi
+
+echo "Running bootloader-config..."
+
+if [ -d /sys/firmware/efi/efivars ]; then
+    echo " * Installing grub-efi (uefi)..."
+    DEBIAN_FRONTEND=noninteractive chroot "$CHROOT" apt-get -y install grub-efi
+else
+    echo " * install grub... (bios)"
+    DEBIAN_FRONTEND=noninteractive chroot "$CHROOT" apt-get -y install grub-pc
+fi
+
+# Vuelve a activar os-prober para detectar otros sistemas en el menú de GRUB.
+sed -i "s/#GRUB_DISABLE_OS_PROBER=false/# OS_PROBER re-enabled by Calamares installation:\nGRUB_DISABLE_OS_PROBER=false/g" "$CHROOT/etc/default/grub"
+chroot "$CHROOT" /usr/sbin/update-grub

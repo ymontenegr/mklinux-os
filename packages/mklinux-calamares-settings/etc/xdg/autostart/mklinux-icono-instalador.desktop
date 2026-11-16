@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Ícono del instalador de MKLinux OS
+Exec=mklinux-icono-instalador
+NoDisplay=true
+OnlyShowIn=XFCE;
+X-GNOME-Autostart-Phase=Initialization

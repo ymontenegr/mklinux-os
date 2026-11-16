@@ -1,0 +1,39 @@
+#!/bin/sh
+# Escribe las fuentes de APT del sistema instalado: repositorios oficiales de
+# Debian (trixie, trixie-updates y trixie-security) en formato deb822, con
+# todos los componentes que usa la imagen.
+# Basado en calamares-settings-debian 13.0.13 (ISC).
+#
+# Uso: calamares-sources-final [DIRECTORIO_RAÍZ]
+#   Sin argumento, usa el destino de Calamares.
+
+if [ -n "$1" ]; then
+    CHROOT="$1"
+else
+    CHROOT=$(mount | grep proc | grep calamares | awk '{print $3}' | sed -e "s#/proc##g")
+fi
+RELEASE="trixie"
+COMPONENTS="main contrib non-free non-free-firmware"
+
+mkdir -p "$CHROOT/etc/apt/sources.list.d"
+cat << EOF2 > "$CHROOT/etc/apt/sources.list.d/debian.sources"
+Types: deb
+URIs: http://deb.debian.org/debian
+Suites: $RELEASE $RELEASE-updates
+Components: $COMPONENTS
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+Types: deb
+URIs: http://security.debian.org/debian-security
+Suites: $RELEASE-security
+Components: $COMPONENTS
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+EOF2
+
+# Las fuentes de la imagen (sources.list de live-build) se reemplazan por las
+# de arriba para no duplicar entradas.
+cat << EOF2 > "$CHROOT/etc/apt/sources.list"
+# Las fuentes de APT de MKLinux OS están en /etc/apt/sources.list.d/debian.sources
+EOF2
+
+exit 0

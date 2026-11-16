@@ -72,13 +72,15 @@ La ISO se construye **sin paquetes recomendados** (`--apt-recommends false` en `
 | `40-audio.list.chroot` | PulseAudio, perfiles ALSA y control de volumen |
 | `50-idioma.list.chroot` | correctores ortográficos en español y Firefox en español |
 | `60-aplicaciones.list.chroot` | Firefox ESR |
-| `90-mklinux.list.chroot` | paquetes propios de `packages/` |
+| `70-instalador.list.chroot` | instalador Calamares |
+| `70-instalador.list.binary` | repositorio local en la ISO con GRUB (BIOS y UEFI) y `cryptsetup-initramfs`, que el instalador usa sin red |
+| `90-mklinux.list.chroot` | paquetes propios de `packages/` (`mklinux-identity`, `mklinux-calamares-settings`) |
 
 Además de las listas, `live-build/config/includes.chroot/` copia archivos de configuración a la imagen; entre ellos, el panel de XFCE (`etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml`), que es el de Debian con el indicador de volumen agregado.
 
 Para agregar un paquete, ponlo en la lista de su función con un comentario si el motivo no es obvio. Como los recomendados no se instalan, revisa con `apt-cache depends <paquete>` qué recomienda y declara también lo que haga falta para que funcione.
 
-La ISO de desarrollo debe pesar como máximo **1 000 000 000 bytes**: el workflow `build-iso` muestra el tamaño en el resumen de cada ejecución y falla si se supera.
+La ISO de desarrollo debe pesar como máximo **1 200 000 000 bytes**: el workflow `build-iso` muestra el tamaño en el resumen de cada ejecución y falla si se supera.
 
 **GPU NVIDIA:** la ISO no incluye `firmware-nvidia-graphics`, así que en equipos con GPU NVIDIA reciente el driver libre `nouveau` funciona solo con gráficos básicos. En un sistema persistente o instalado se puede agregar con:
 
@@ -128,7 +130,7 @@ Alternativa gráfica en Ubuntu: la aplicación **Discos** (`gnome-disks`). Elige
 ### Requisitos del host
 
 ```bash
-sudo apt install qemu-system-x86 ovmf
+sudo apt install qemu-system-x86 qemu-utils ovmf
 sudo usermod -aG kvm "$USER"   # luego cerrar sesión y volver a entrar
 ```
 
@@ -141,10 +143,25 @@ Coloca la ISO en `out/` (construida en local o descargada de CI, ver arriba) y e
 ```bash
 scripts/test-qemu.sh bios                      # firmware BIOS, ISO más reciente de out/
 scripts/test-qemu.sh uefi                      # firmware UEFI (OVMF)
-scripts/test-qemu.sh uefi out/mklinux-os-20261115-amd64.iso   # ISO concreta
+scripts/test-qemu.sh uefi out/mklinux-os-20261116-amd64.iso   # ISO concreta
 ```
 
-La VM usa KVM, 2 CPU y 1536 MB de RAM, sin disco (solo sesión live). En modo UEFI se usa una copia temporal de las variables OVMF, que se borra al cerrar la VM. Para usar otro firmware: `OVMF_CODE=/ruta/CODE.fd OVMF_VARS=/ruta/VARS.fd scripts/test-qemu.sh uefi`.
+La VM usa KVM, 2 CPU y 1536 MB de RAM, sin disco (solo sesión live). En modo UEFI se usa una copia temporal de las variables OVMF, que se borra al cerrar la VM.
+
+Opciones para probar la instalación (van después del modo):
+
+| Opción | Efecto |
+|---|---|
+| `--disco` | conecta el disco virtual `out/mklinux-disco-<modo>.qcow2` (20 GB; se crea vacío si no existe y crece según se usa). En `uefi`, las variables UEFI se guardan en `out/mklinux-disco-uefi.vars.fd` y se conservan entre ejecuciones. Arranca primero la ISO y, si no hay, el disco. |
+| `--sin-iso` | con `--disco`: arranca solo desde el disco, para probar el sistema instalado. |
+| `--sin-red` | arranca la VM sin tarjeta de red. |
+
+```bash
+scripts/test-qemu.sh bios --disco --sin-red    # instalar sin red desde la ISO
+scripts/test-qemu.sh bios --disco --sin-iso    # arrancar el sistema instalado
+rm out/mklinux-disco-bios.qcow2                # empezar de cero (en uefi, borrar también out/mklinux-disco-uefi.vars.fd)
+```
+ Para usar otro firmware: `OVMF_CODE=/ruta/CODE.fd OVMF_VARS=/ruta/VARS.fd scripts/test-qemu.sh uefi`.
 
 ### Lista de comprobación de aceptación
 
@@ -164,3 +181,30 @@ Repetir en modo `bios` y en modo `uefi`:
    | `date +%Z` | `-05` |
    | `hostnamectl \| grep 'Operating System'` | `MKLinux OS 0.1 (trixie)` |
    | `dpkg -s mklinux-identity \| grep Status` | `install ok installed` |
+
+## Instalar MKLinux OS
+
+En la sesión live, el ícono **Instalar MKLinux OS** del escritorio (o Menú → Sistema) abre el instalador Calamares. Funciona sin conexión a internet: el cargador de arranque y las herramientas de cifrado se instalan desde un repositorio que va dentro de la ISO.
+
+- **Particionado:** "Borrar disco" (borra **todo** el disco elegido; opcionalmente cifra el sistema con LUKS) o "Particionado manual". No se ofrece instalar junto a otro sistema.
+- **Disco mínimo:** 20 GB. El instalador no avisa si el disco es más pequeño: la instalación fallaría a mitad, con el disco ya borrado.
+- **Valores por defecto:** idioma `es_CO.UTF-8`, teclado `latam`, zona `America/Bogota` y equipo `mklinux`. Todos se pueden cambiar.
+- **Sistema instalado:** el usuario y la contraseña elegidos (con `sudo`), XFCE con LightDM y la identidad de MKLinux OS. No conserva el usuario live `mk`, los paquetes de la sesión live ni el instalador. Las actualizaciones vienen de los repositorios oficiales de Debian (`/etc/apt/sources.list.d/debian.sources`).
+
+### Lista de comprobación de la instalación (QEMU)
+
+1. **BIOS sin red:** `scripts/test-qemu.sh bios --disco --sin-red`. En la sesión live, el ícono abre el instalador sin pedir contraseña, en español, con la marca de MKLinux OS y los valores por defecto de arriba. Instala con "Borrar disco", sin cifrado y con el usuario `prueba`.
+2. **Sistema instalado (BIOS):** `scripts/test-qemu.sh bios --disco --sin-iso`. Arranca hasta LightDM y `prueba` entra a XFCE. En una terminal:
+
+   | Comando | Resultado esperado |
+   |---|---|
+   | `sudo true; echo $?` | `0` (con la contraseña de `prueba`) |
+   | `grep -E '^(NAME\|ID)=' /etc/os-release` | `NAME="MKLinux OS"` e `ID=mklinux` |
+   | `dpkg -s mklinux-identity \| grep Status` | `install ok installed` |
+   | `dpkg -l live-boot live-config live-config-systemd live-tools calamares mklinux-calamares-settings \| grep ^ii` | sin salida |
+   | `getent passwd mk` | sin salida |
+   | `sudo apt-get update` (con red) | termina sin errores |
+
+3. **Opciones de particionado:** `scripts/test-qemu.sh bios --disco` con el disco del paso 1. En el instalador, la página de particionado solo ofrece "Borrar disco" y "Particionado manual".
+4. **UEFI con cifrado:** `scripts/test-qemu.sh uefi --disco`. Instala con "Borrar disco" y la casilla de cifrado. Después, `scripts/test-qemu.sh uefi --disco --sin-iso`: pide la contraseña de cifrado, llega a LightDM, `[ -d /sys/firmware/efi ] && echo UEFI` muestra `UEFI` y `lsblk -o NAME,TYPE` muestra un dispositivo `crypt`.
+5. Al terminar, borra los discos virtuales: `rm out/mklinux-disco-*`.

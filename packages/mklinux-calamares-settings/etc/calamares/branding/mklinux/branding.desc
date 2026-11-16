@@ -1,0 +1,42 @@
+# Marca de MKLinux OS para Calamares. Las imágenes son provisionales y se
+# generan con scripts/generar-marca.sh.
+---
+componentName:  mklinux
+
+welcomeStyleCalamares:   true
+welcomeExpandingLogo:    true
+
+windowExpanding:    normal
+windowSize:         800px,580px
+windowPlacement:    center
+
+strings:
+    productName:         MKLinux OS
+    shortProductName:    MKLinux OS
+    version:             "0.1"
+    shortVersion:        "0.1"
+    versionedName:       MKLinux OS 0.1
+    shortVersionedName:  MKLinux OS 0.1
+    bootloaderEntryName: MKLinux OS
+    productUrl:          https://github.com/ymontenegr/mklinux-os
+    supportUrl:          https://github.com/ymontenegr/mklinux-os/issues
+    knownIssuesUrl:      https://github.com/ymontenegr/mklinux-os/issues
+
+sidebar:     widget
+navigation:  widget
+
+images:
+    productLogo:         "logo.png"
+    productIcon:         "logo.png"
+    productWelcome:      "bienvenida.png"
+
+# Presentación como lista de imágenes: no necesita módulos QML.
+slideshow:
+    - "diapositiva1.png"
+    - "diapositiva2.png"
+
+style:
+    SidebarBackground:        "#1e3a5f"
+    SidebarText:              "#FFFFFF"
+    SidebarTextCurrent:       "#FFFFFF"
+    SidebarBackgroundCurrent: "#2c5282"

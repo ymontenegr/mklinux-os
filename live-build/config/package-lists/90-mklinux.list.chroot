@@ -1,2 +1,3 @@
 # Paquetes propios (desde config/packages.chroot).
 mklinux-identity
+mklinux-calamares-settings

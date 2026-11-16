@@ -1,0 +1,9 @@
+// MKLinux OS: el usuario de la sesión live (grupo sudo, sesión local activa)
+// abre el instalador sin contraseña. Solo afecta a Calamares, y el instalador
+// quita este paquete del sistema instalado, así que la regla no llega a él.
+polkit.addRule(function(action, subject) {
+    if (action.id == "com.github.calamares.calamares.pkexec.run" &&
+        subject.local && subject.active && subject.isInGroup("sudo")) {
+        return polkit.Result.YES;
+    }
+});

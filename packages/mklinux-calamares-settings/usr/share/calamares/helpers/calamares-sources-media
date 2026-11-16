@@ -1,0 +1,33 @@
+#!/bin/sh
+# Usa el repositorio de la ISO (pool/ y dists/ del medio live) como fuente de
+# APT del sistema destino durante la instalación, para instalar GRUB y
+# cryptsetup sin red. Con -u, lo desmonta y lo quita.
+# Basado en calamares-settings-debian 13.0.13 (ISC).
+
+CHROOT=$(mount | grep proc | grep calamares | awk '{print $3}' | sed -e "s#/proc##g")
+KNOWN_MEDIUM_PATHS="/run/live/medium /run/initramfs/live"
+RELEASE="trixie"
+
+for path in $KNOWN_MEDIUM_PATHS; do
+    if [ "$(mount | grep "$path" | cut -f3 -d" ")" = "$path" ]; then
+        MEDIUM_PATH=$path
+    fi
+done
+
+if [ "$1" = "-u" ]; then
+    umount "$CHROOT/$MEDIUM_PATH"
+    rm -f "$CHROOT/etc/apt/sources.list.d/debian-live-media.list"
+    chroot "$CHROOT" apt-get update
+    exit 0
+fi
+
+# Las fuentes definitivas se escriben al final (sources-final).
+rm -f "$CHROOT/etc/apt/sources.list.d/base.list"
+
+mkdir -p "$CHROOT/$MEDIUM_PATH"
+mount --bind "$MEDIUM_PATH" "$CHROOT/$MEDIUM_PATH"
+echo "deb [trusted=yes] file:$MEDIUM_PATH $RELEASE main" > "$CHROOT/etc/apt/sources.list.d/debian-live-media.list"
+chroot "$CHROOT" apt-get update
+rmdir "$CHROOT/run/live/medium" "$CHROOT/run/live" 2>/dev/null
+
+exit 0

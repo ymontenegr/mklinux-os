@@ -54,7 +54,7 @@ La sesión live SHALL usar el idioma `es_CO.UTF-8`, la distribución de teclado 
 La sesión live SHALL tener un servidor de sonido en ejecución para el usuario `mk` y un control de volumen en el panel de XFCE.
 
 #### Scenario: Servidor de sonido activo
-- **WHEN** el usuario ejecuta `pactl info` en una terminal de la sesión live
+- **WHEN** el usuario ejecuta `LC_ALL=C pactl info` en una terminal de la sesión live
 - **THEN** el comando termina con código 0 y muestra un `Server Name`
 
 #### Scenario: Control de volumen

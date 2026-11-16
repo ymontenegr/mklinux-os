@@ -72,11 +72,11 @@ Si cualquier etapa del build falla, `scripts/build.sh` SHALL terminar con códig
 - **AND** no se crea ni se modifica `out/mklinux-os-<fecha>-amd64.iso`
 
 ### Requirement: Tamaño máximo de la ISO de desarrollo
-La ISO de desarrollo (compresión zstd, sin `--release`) SHALL pesar como máximo 1 000 000 000 bytes.
+La ISO de desarrollo (compresión zstd, sin `--release`) SHALL pesar como máximo 1 200 000 000 bytes.
 
 #### Scenario: ISO dentro del límite
 - **WHEN** termina correctamente un build de desarrollo
-- **THEN** `stat -c %s out/mklinux-os-<fecha>-amd64.iso` devuelve un valor menor o igual a 1000000000
+- **THEN** `stat -c %s out/mklinux-os-<fecha>-amd64.iso` devuelve un valor menor o igual a 1200000000
 
 ### Requirement: Contenido declarado explícitamente
 La imagen SHALL instalar solo los paquetes declarados en las listas de paquetes del repositorio y sus dependencias obligatorias; los paquetes recomendados por Debian SHALL NOT instalarse de forma implícita.

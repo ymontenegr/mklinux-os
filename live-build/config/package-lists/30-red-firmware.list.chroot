@@ -5,7 +5,8 @@ network-manager-gnome
 wpasupplicant
 
 # Firmware: libre, variado no libre, GPU y audio Intel, Wi-Fi Intel,
-# MediaTek y Realtek. Sin firmware de GPU NVIDIA (no se declara).
+# MediaTek, Realtek y Broadcom (brcmsmac/brcmfmac).
+# Sin firmware de GPU NVIDIA (no se declara).
 firmware-linux-free
 firmware-misc-nonfree
 firmware-intel-graphics
@@ -13,6 +14,7 @@ firmware-intel-misc
 firmware-mediatek
 firmware-iwlwifi
 firmware-realtek
+firmware-brcm80211
 
 # Base de datos regulatoria de Wi-Fi (canales permitidos por país)
 wireless-regdb

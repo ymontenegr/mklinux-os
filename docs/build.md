@@ -68,7 +68,7 @@ La ISO se construye **sin paquetes recomendados** (`--apt-recommends false` en `
 |---|---|
 | `10-base.list.chroot` | sesión live, `sudo`, polkit, idioma y teclado de consola |
 | `20-escritorio.list.chroot` | XFCE, LightDM, Xorg, servicios de escritorio (discos, papelera, energía, notificaciones), fuentes, iconos y herramientas de XFCE |
-| `30-red-firmware.list.chroot` | NetworkManager, Wi-Fi y firmware (Intel, MediaTek, Realtek y varios) |
+| `30-red-firmware.list.chroot` | NetworkManager, Wi-Fi y firmware (Intel, MediaTek, Realtek, Broadcom y varios) |
 | `40-audio.list.chroot` | PulseAudio, perfiles ALSA y control de volumen |
 | `50-idioma.list.chroot` | correctores ortográficos en español y Firefox en español |
 | `60-aplicaciones.list.chroot` | Firefox ESR |
@@ -87,6 +87,41 @@ sudo apt update && sudo apt install firmware-nvidia-graphics
 ```
 
 y reiniciando.
+
+**Wi-Fi Broadcom:** la ISO trae `firmware-brcm80211` para el driver libre `brcmsmac` (BCM4313, BCM43224 y BCM43225, por ejemplo, la de la MacBook Air 2012) y bloquea la carga automática de `b43` en `/etc/modprobe.d/mklinux-broadcom.conf`. Los dos drivers reclaman las mismas tarjetas, y `b43` no funciona sin su firmware, que no está en la ISO. En un sistema persistente o instalado con una tarjeta que solo soporta `b43`:
+
+```bash
+sudo apt install firmware-b43-installer
+sudo rm /etc/modprobe.d/mklinux-broadcom.conf
+sudo update-initramfs -u
+```
+
+y reiniciando.
+
+## Usar la ISO en una memoria USB
+
+La ISO es híbrida: se puede grabar tal cual en una memoria USB (de 2 GB o más) y arrancar un equipo real con ella. Es una sesión live: el disco del equipo no se toca y lo que se haga en la sesión se pierde al apagar. **Todo el contenido de la memoria se borra.**
+
+### Grabar la memoria
+
+Conecta la memoria y busca su nombre de dispositivo:
+
+```bash
+lsblk -o NAME,SIZE,MODEL,TRAN
+```
+
+Es la fila con `TRAN` = `usb` y el tamaño de la memoria (por ejemplo, `sdb`). Comprueba que no sea el disco interno. Luego, cambiando `sdX` por ese nombre:
+
+```bash
+sudo dd if=out/mklinux-os-<AAAAMMDD>-amd64.iso of=/dev/sdX bs=4M status=progress oflag=sync
+```
+
+Alternativa gráfica en Ubuntu: la aplicación **Discos** (`gnome-disks`). Elige la memoria y, en el menú ⋮, usa "Restaurar imagen de disco…" con la ISO.
+
+### Arrancar desde la memoria
+
+- **PC:** al encender, pulsa la tecla del menú de arranque del fabricante (suele ser F12, F10, F9 o Esc) y elige la memoria USB. En UEFI, Secure Boot debe estar desactivado.
+- **Mac con procesador Intel:** apaga el equipo, conecta la memoria, enciéndelo manteniendo pulsada la tecla **Option (⌥ / Alt)** y elige **"EFI Boot"**.
 
 ## Probar la ISO en QEMU
 

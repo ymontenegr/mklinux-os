@@ -2,3 +2,9 @@
 # paquete propio mklinux-calamares-settings (90-mklinux). El instalador quita
 # ambos del sistema instalado.
 calamares
+
+# Recomendados de calamares que la instalación necesita (la ISO se construye
+# sin recomendados): unsquashfs para copiar el sistema al disco y mkfs.btrfs
+# para el particionado manual con btrfs.
+squashfs-tools
+btrfs-progs

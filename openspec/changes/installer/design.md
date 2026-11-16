@@ -69,7 +69,9 @@ Se sigue el método de Debian en lugar de instalar `grub-pc-bin` y `grub-efi-amd
 - `allowManualPartitioning: true`, `initialPartitioningChoice: erase`.
 - `enableLuksAutomatedPartitioning: true` (casilla desmarcada por defecto).
 - `userSwapChoices: [none, file]`, `initialSwapChoice: file`.
-- `defaultFileSystemType: ext4`.
+- `defaultFileSystemType: ext4`, `availableFileSystemTypes: [ext4, btrfs]`.
+
+Como la ISO se construye sin recomendados, `70-instalador.list.chroot` declara los recomendados de `calamares` que la instalación necesita: `squashfs-tools` (`unsquashfs` para `unpackfs`) y `btrfs-progs` (btrfs en el particionado manual). Se detectó en la tarea 4.2: `unpackfs` falló porque no había `unsquashfs`. xfs no se ofrece para no sumar `xfsprogs`.
 
 Para que no se ofrezcan "Instalar junto a" ni "Reemplazar" (decisión del mantenedor), no se configura `requiredStorage` ni en `welcome.conf` ni en `partition.conf`. La bienvenida solo comprueba `ram` (1 GiB) y `root`. A cambio se pierde el aviso de disco pequeño. `docs/build.md` indica el mínimo (20 GB), y la tarea 4.3 verifica en QEMU que esas opciones no aparecen con un disco que ya tiene particiones.
 

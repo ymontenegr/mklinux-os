@@ -1,0 +1,6 @@
+# Repositorio local en la ISO (pool/ y dists/) para que el instalador configure
+# el arranque sin red. live-build resuelve cada lista .binary con una orden de
+# apt aparte: grub-pc y grub-efi-amd64 están en conflicto entre sí, así que
+# cada uno va en su propia lista.
+# GRUB para equipos BIOS.
+grub-pc

@@ -58,7 +58,7 @@ Alternativa descartada: depender de `calamares-settings-debian` y desviar sus ar
 
 ### 2. Repositorio local en la ISO para el cargador de arranque y LUKS
 
-`live-build/config/package-lists/installer.list.binary` declara `grub-pc`, `grub-efi-amd64` y `cryptsetup-initramfs` (live-build agrega sus dependencias). `bootloader-config` los instala en el sistema destino desde `file:/run/live/medium`, igual que en Debian.
+Tres listas `live-build/config/package-lists/70-instalador-{bios,uefi,luks}.list.binary` declaran `grub-pc`, `grub-efi-amd64` y `cryptsetup-initramfs`, una por paquete: live-build resuelve cada lista `.binary` con una orden `apt-get --download-only install` propia (con `Dir::State::status=/dev/null`, así que descarga también sus dependencias), y `grub-pc` y `grub-efi-amd64` están en conflicto entre sí. `bootloader-config` los instala en el sistema destino desde `file:/run/live/medium`, igual que en Debian.
 
 Se sigue el método de Debian en lugar de instalar `grub-pc-bin` y `grub-efi-amd64-bin` en el chroot: así el sistema instalado tiene el paquete `grub-*` correcto para su firmware y se actualiza con `apt`.
 

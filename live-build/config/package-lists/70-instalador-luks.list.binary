@@ -1,0 +1,3 @@
+# Repositorio local en la ISO: LUKS en el initramfs para instalaciones con
+# cifrado (ver 70-instalador-bios.list.binary).
+cryptsetup-initramfs

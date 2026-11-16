@@ -1,6 +1,0 @@
-# Repositorio local en la ISO (pool/ y dists/) para que el instalador
-# configure el arranque y el cifrado sin red: GRUB para BIOS (grub-pc) y UEFI
-# (grub-efi-amd64), y LUKS en el initramfs (cryptsetup-initramfs).
-grub-pc
-grub-efi-amd64
-cryptsetup-initramfs

@@ -73,7 +73,7 @@ La ISO se construye **sin paquetes recomendados** (`--apt-recommends false` en `
 | `50-idioma.list.chroot` | correctores ortográficos en español y Firefox en español |
 | `60-aplicaciones.list.chroot` | Firefox ESR |
 | `70-instalador.list.chroot` | instalador Calamares |
-| `70-instalador.list.binary` | repositorio local en la ISO con GRUB (BIOS y UEFI) y `cryptsetup-initramfs`, que el instalador usa sin red |
+| `70-instalador-{bios,uefi,luks}.list.binary` | repositorio local en la ISO con GRUB para BIOS y UEFI y `cryptsetup-initramfs`, que el instalador usa sin red (una lista por paquete: live-build resuelve cada una por separado y `grub-pc` y `grub-efi-amd64` están en conflicto) |
 | `90-mklinux.list.chroot` | paquetes propios de `packages/` (`mklinux-identity`, `mklinux-calamares-settings`) |
 
 Además de las listas, `live-build/config/includes.chroot/` copia archivos de configuración a la imagen; entre ellos, el panel de XFCE (`etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml`), que es el de Debian con el indicador de volumen agregado.
